@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Netzwerktechnik-Trainer</title>
+  <link rel="icon" href="assets/icon.svg">
+  <!-- iPhone / PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Netzwerk">
+  <meta name="theme-color" content="#0b1020">
+  <link rel="stylesheet" href="css/style.css?v=3">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="#/">
+        <span class="logo"><img src="assets/icon.svg" alt=""></span>
+        <span>Netzwerk-Trainer<small>Prüfungsvorbereitung</small></span>
+      </a>
+      <button class="menu-btn btn sm" id="menuBtn">☰ Menü</button>
+      <nav class="nav" id="nav"></nav>
+      <div class="side-foot">
+        <button class="btn sm ghost" id="themeBtn" title="Hell/Dunkel umschalten">🌓<span class="lbl"> Design</span></button>
+        <button class="btn sm ghost" id="resetBtn" title="Fortschritt löschen">↺<span class="lbl"> Reset</span></button>
+      </div>
+    </aside>
+    <main id="main"></main>
+  </div>
+  <!-- Untere Navigationsleiste (nur Handy) -->
+  <nav class="tabbar" id="tabbar">
+    <a href="#/" data-p=""><span>🏠</span>Start</a>
+    <a href="#/themen" data-p="themen"><span>📚</span>Themen</a>
+    <a href="#/pruefung" data-p="pruefung"><span>📝</span>Prüfung</a>
+    <a href="#/karten" data-p="karten"><span>🃏</span>Karten</a>
+    <a href="#/fehler" data-p="fehler"><span>🩹</span>Fehler</a>
+  </nav>
+
+  <!-- Kern -->
+  <script src="js/app.js?v=3"></script>
+  <script src="js/ipv6.js?v=3"></script>
+
+  <!-- THEMEN: neue Datei in topics/ anlegen (Vorlage: topics/_vorlage.js) und hier eintragen.
+       Die Reihenfolge hier = Reihenfolge in der App. -->
+  <script src="topics/ipv6-aufbau.js?v=3"></script>
+  <script src="topics/ipv6-subnetting.js?v=3"></script>
+  <script src="topics/ipv6-adresstypen.js?v=3"></script>
+  <script src="topics/slaac.js?v=3"></script>
+  <script src="topics/dhcp.js?v=3"></script>
+  <script src="topics/apipa.js?v=3"></script>
+  <script src="topics/dns-hierarchie.js?v=3"></script>
+  <script src="topics/dns-zonen.js?v=3"></script>
+</body>
+</html>

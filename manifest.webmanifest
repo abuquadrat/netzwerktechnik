@@ -1,0 +1,17 @@
+{
+  "name": "Netzwerktechnik-Trainer",
+  "short_name": "Netzwerk",
+  "description": "IPv6, DHCP, APIPA und DNS lernen – mit Quiz, Karteikarten und Prüfungsmodus.",
+  "lang": "de",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1020",
+  "theme_color": "#0b1020",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
