@@ -202,6 +202,42 @@ registerTopic({
     },
   ],
 
+  games: {
+    blitz: [
+      () => {
+        const v = pick([4, 6, 8, 10, 12, 16, 24, 48]), which = pick(['T1', 'T2']);
+        const f = x => String(Math.round(x * 100) / 100).replace('.', ',') + ' h';
+        const right = which === 'T1' ? v * .5 : v * .875;
+        const wrong = [...new Set([which === 'T1' ? v * .875 : v * .5, v * .75, v * .25])].filter(x => x !== right).slice(0, 2);
+        return { q: `Lease = <b>${v} Stunden</b>. Wann ist <b>${which}</b> (${which === 'T1' ? 'Renewing' : 'Rebinding'})?`, a: [right, ...wrong].map(f), e: `${which} = ${which === 'T1' ? '50 %' : '87,5 %'} der Lease = ${f(right)}.` };
+      },
+      () => pick([
+        { q: 'Welchen Port nutzt der DHCP-Server?', a: ['UDP 67', 'UDP 68', 'TCP 53'], e: 'Server 67, Client 68.' },
+        { q: 'Quell-IP des DHCPDISCOVER?', a: ['0.0.0.0', '255.255.255.255', '169.254.0.1'], e: 'Der Client hat noch keine Adresse.' },
+        { q: 'Ziel-IP des DHCPDISCOVER?', a: ['255.255.255.255', '0.0.0.0', 'IP des Servers'], e: 'Broadcast – der Server ist unbekannt.' },
+        { q: 'Client meldet: angebotene IP ist belegt', a: ['DHCPDECLINE', 'DHCPNAK', 'DHCPRELEASE'], e: 'NAK kommt vom Server.' },
+        { q: 'DHCP über Router hinweg braucht …', a: ['Relay-Agent', 'NAT', 'APIPA'], e: 'z. B. ip helper-address.' },
+        { q: 'DHCPv6-Ablauf?', a: ['SARR', 'DORA', 'RS/RA'], e: 'Solicit, Advertise, Request, Reply.' },
+        { q: 'Welche Option ist das Gateway?', a: ['Option 3', 'Option 6', 'Option 51'], e: '1 Maske, 3 Router, 6 DNS, 51 Lease.' },
+      ]),
+    ],
+    sort: [
+      {
+        name: 'Zuweisungsart', q: 'Welche DHCP-Zuweisungsart passt?', bins: ['🔄 Dynamisch', '♾️ Automatisch', '📌 Manuell'],
+        items: [['Gäste-WLAN: Adresse für 1 Tag', 0, 'Begrenzte Lease aus dem Pool = dynamisch.'], ['Drucker bekommt immer 192.168.1.50 – per MAC festgelegt', 2, 'Reservierung MAC → IP = manuell.'], ['Freie Adresse aus dem Pool, für immer behalten', 1, 'Unbegrenzte Lease = automatisch.'], ['Lease läuft nach 8 Stunden ab', 0, 'Zeitlich begrenzt = dynamisch.'], ['Reservierung im DHCP-Server', 2, 'Admin legt die IP fest = manuell.'], ['Unbegrenzte Lease, IP vom Server gewählt', 1, 'Automatisch.'], ['Fileserver: MAC AA:BB:CC… → 192.168.1.10', 2, 'Feste Zuordnung = manuell.'], ['Büro-Laptop, Lease 8 Tage', 0, 'Dynamisch.'], ['Pool füllt sich mit Geräten, die nie wiederkommen', 1, 'Risiko der automatischen Zuweisung.']],
+      },
+      {
+        name: 'Broadcast oder Unicast?', q: 'Wie wird die Nachricht gesendet?', bins: ['📢 Broadcast', '🎯 Unicast'],
+        items: [['DHCPDISCOVER', 0, 'Client kennt den Server nicht.'], ['DHCPREQUEST beim ersten Bezug', 0, 'Damit alle Server erfahren, welches Angebot gewählt wurde.'], ['DHCPREQUEST bei T1 (50 %)', 1, 'Renewing: direkt an den eigenen Server.'], ['DHCPREQUEST bei T2 (87,5 %)', 0, 'Rebinding: an alle Server.'], ['Relay-Agent → DHCP-Server', 1, 'Der Relay macht aus dem Broadcast einen Unicast.'], ['DHCPRELEASE', 1, 'Client hat IP und kennt den Server.']],
+      },
+    ],
+    seq: [
+      { name: 'DORA', steps: ['DHCPDISCOVER (Client sucht Server)', 'DHCPOFFER (Server bietet IP an)', 'DHCPREQUEST (Client nimmt an)', 'DHCPACK (Server bestätigt)'] },
+      { name: 'Lease-Lebenszyklus', steps: ['DORA – Adresse erhalten', 'Bound: Adresse nutzen', 'T1 (50 %): Request per Unicast', 'T2 (87,5 %): Request per Broadcast', 'Lease abgelaufen: Adresse aufgeben', 'Neuer DHCPDISCOVER'] },
+    ],
+    pairs: [['UDP 67', 'DHCP-Server'], ['UDP 68', 'DHCP-Client'], ['T1', '50 % der Lease'], ['T2', '87,5 % der Lease'], ['DHCPDECLINE', 'Adresse ist belegt'], ['DHCPNAK', 'Server lehnt ab'], ['ip helper-address', 'Relay-Agent'], ['Option 3', 'Standardgateway'], ['Option 6', 'DNS-Server'], ['Reservierung', 'manuelle Zuweisung']],
+  },
+
   visuals: [
     {
       title: '🎬 DORA animiert',

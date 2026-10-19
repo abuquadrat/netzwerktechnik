@@ -167,6 +167,39 @@ ipv6 unicast-routing                <span class="hl">! ohne das sendet der Route
     },
   ],
 
+  games: {
+    blitz: [
+      () => {
+        const b = rnd(256), f = b ^ 2, h = x => x.toString(16).padStart(2, '0');
+        const wrong = [...new Set([h(b), h(b ^ 1), h(b ^ 4), h(b ^ 0x20)])].filter(x => x !== h(f));
+        return { q: `MAC beginnt mit <code>${h(b)}</code>. Erstes Byte der EUI-64-Interface-ID?`, a: [h(f), ...shuffle(wrong).slice(0, 2)], e: `7. Bit umdrehen: ${h(b)} → ${h(f)}. Trick: 2. Hex-Ziffer ±2 (0↔2, 4↔6, 8↔a, c↔e …).` };
+      },
+      () => pick([
+        { q: 'Router Solicitation geht an …', a: ['ff02::2', 'ff02::1', 'ff02::1:2'], e: 'Alle Router.' },
+        { q: 'Router Advertisement geht an …', a: ['ff02::1', 'ff02::2', '::1'], e: 'Alle Knoten.' },
+        { q: 'ICMPv6-Typ der Router Advertisement?', a: ['134', '133', '136'], e: 'RS 133, RA 134, NS 135, NA 136.' },
+        { q: 'Quelladresse der NS bei DAD?', a: ['::', '::1', 'fe80::1'], e: 'Noch keine gültige Adresse → Unspecified.' },
+        { q: 'Was wird bei EUI-64 eingefügt?', a: ['FFFE', 'FFFF', 'FE80'], e: 'In die Mitte der MAC.' },
+        { q: 'Woher kommt das IPv6-Gateway?', a: ['aus dem RA', 'vom DHCPv6-Server', 'aus der MAC'], e: 'DHCPv6 verteilt kein Gateway.' },
+      ]),
+    ],
+    sort: [
+      {
+        name: 'Wer sendet das?', q: 'Wer verschickt diese Nachricht?', bins: ['💻 Host', '📶 Router'],
+        items: [['Router Solicitation (RS)', 0, 'Host fragt nach Routern – an ff02::2.'], ['Router Advertisement (RA)', 1, 'Router verkündet Präfix & Flags.'], ['Neighbor Solicitation für DAD', 0, 'Host prüft, ob seine neue Adresse frei ist.'], ['Periodisches RA an ff02::1', 1, 'Router senden RAs auch unaufgefordert.'], ['Redirect (ICMPv6 137)', 1, 'Router nennt einen besseren Next-Hop.'], ['DHCPv6 Solicit an ff02::1:2', 0, 'Host sucht DHCPv6-Server (z. B. bei M-Flag).'], ['Präfix-Info mit A-Flag', 1, 'Steht im RA des Routers.'], ['NS von :: an ff02::1:ff…', 0, 'DAD des Hosts – Quelle ::, weil er noch keine Adresse hat.']],
+      },
+      {
+        name: 'Welches Flag?', q: 'Welches RA-Flag bewirkt das?', bins: ['A-Flag', 'M-Flag', 'O-Flag'],
+        items: [['Host bildet seine Adresse selbst aus dem Präfix', 0, 'A = Autonomous (Präfix-Info).'], ['Adresse vom DHCPv6-Server holen (stateful)', 1, 'M = Managed.'], ['Nur DNS & Co. per DHCPv6, Adresse per SLAAC', 2, 'O = Other (stateless DHCPv6).'], ['„Autonomous Address Configuration“', 0, 'A-Flag steht in der Präfix-Information.'], ['„Managed Address Configuration“', 1, 'M-Flag.'], ['„Other Configuration“', 2, 'O-Flag.']],
+      },
+    ],
+    seq: [
+      { name: 'SLAAC-Ablauf', steps: ['LLA bilden (fe80:: + Interface-ID)', 'DAD für die LLA (NS von ::)', 'Router Solicitation an ff02::2', 'Router Advertisement mit Präfix', 'GUA bilden (Präfix + Interface-ID)', 'DAD für die GUA', 'Gateway = LLA des Routers'] },
+      { name: 'EUI-64 bilden', steps: ['MAC in der Mitte teilen', 'FFFE einfügen', '7. Bit des ersten Bytes umdrehen', 'In vier 16-Bit-Blöcke schreiben', 'fe80:: oder Präfix davorsetzen'] },
+    ],
+    pairs: [['RS', 'ICMPv6 133'], ['RA', 'ICMPv6 134'], ['NS', 'ICMPv6 135'], ['NA', 'ICMPv6 136'], ['M-Flag', 'stateful DHCPv6'], ['O-Flag', 'stateless DHCPv6'], ['FFFE', 'EUI-64-Füller'], ['DAD', 'Duplikat-Prüfung'], ['RDNSS', 'DNS im RA']],
+  },
+
   visuals: [
     {
       title: '🎬 Ablauf animiert',

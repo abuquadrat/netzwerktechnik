@@ -210,6 +210,39 @@ $ dig firma.local AXFR @ns1         <span class="hl">← Zonentransfer anfordern
     },
   ],
 
+  games: {
+    blitz: [
+      () => {
+        const ip = [pick([192, 10, 172]), rnd(256), rnd(256), 1 + rnd(254)];
+        if (ip[0] === 192) ip[1] = 168;
+        if (ip[0] === 172) ip[1] = 16 + rnd(16);
+        const r = [...ip].reverse();
+        return { q: `PTR-Name für <code>${ip.join('.')}</code>?`, a: [r.join('.') + '.in-addr.arpa', ip.join('.') + '.in-addr.arpa', r.slice(1).join('.') + '.in-addr.arpa'], e: 'Alle vier Oktette rückwärts + .in-addr.arpa. Ohne das Host-Oktett wäre es nur der Zonenname.' };
+      },
+      () => {
+        const n = [pick([192, 10, 172]), rnd(256), rnd(256)];
+        if (n[0] === 192) n[1] = 168;
+        if (n[0] === 172) n[1] = 16 + rnd(16);
+        return { q: `Reverse-Zone für <code>${n.join('.')}.0/24</code>?`, a: [[...n].reverse().join('.') + '.in-addr.arpa', n.join('.') + '.in-addr.arpa', '0.' + [...n].reverse().join('.') + '.in-addr.arpa'], e: 'Netzanteil rückwärts + .in-addr.arpa.' };
+      },
+    ],
+    sort: [
+      {
+        name: 'Forward oder Reverse?', q: 'Forward- oder Reverse-Lookupzone?', bins: ['➡️ Forward (Name → IP)', '🔁 Reverse (IP → Name)'],
+        items: [['A-Record', 0], ['PTR-Record', 1], ['1.168.192.in-addr.arpa', 1, 'in-addr.arpa = Reverse-Zone.'], ['firma.local', 0, 'Domainname = Forward-Zone.'], ['nslookup www.firma.de', 0, 'Name gesucht → Forward.'], ['nslookup 8.8.8.8', 1, 'IP eingegeben → PTR-Abfrage.'], ['AAAA-Record', 0], ['… .ip6.arpa', 1, 'IPv6-Reverse.'], ['MX-Record', 0], ['20 IN PTR www.firma.local.', 1], ['www IN A 192.168.1.20', 0], ['Mailserver prüft, ob die IP einen Namen hat', 1, 'Reverse-Lookup gegen Spam.']],
+      },
+      {
+        name: 'Welcher Record?', q: 'Welcher Record-Typ passt?', bins: ['A / AAAA', 'PTR', 'MX', 'CNAME'],
+        items: [['Name → IPv4-Adresse', 0], ['Name → IPv6-Adresse', 0, 'AAAA.'], ['IP → Name', 1], ['Mailserver der Domain', 2], ['Alias auf einen anderen Namen', 3], ['intranet → www.firma.local.', 3, 'Ein Name zeigt auf einen anderen Namen = CNAME.'], ['@ IN MX 10 mail.firma.local.', 2], ['20.1.168.192.in-addr.arpa', 1], ['Spam-Check: passt der Name zur IP?', 1], ['www → 2001:db8::20', 0, 'AAAA-Record.']],
+      },
+    ],
+    seq: [
+      { name: 'Reverse-Zone anlegen (192.168.1.0/24)', steps: ['Netzanteil bestimmen: 192.168.1', 'Oktette umdrehen: 1.168.192', '.in-addr.arpa anhängen', 'PTR-Records eintragen: 20 → www.firma.local.'] },
+      { name: 'Änderung an einer Zone', steps: ['Record in der primären Zone ändern', 'Seriennummer im SOA erhöhen', 'Secondary fragt nach (Refresh)', 'Höhere Serial erkannt', 'Zonentransfer (IXFR/AXFR, TCP 53)'] },
+    ],
+    pairs: [['A', 'IPv4-Adresse'], ['AAAA', 'IPv6-Adresse'], ['PTR', 'IP → Name'], ['MX', 'Mailserver'], ['CNAME', 'Alias'], ['SOA', 'Zonenkopf'], ['NS', 'Nameserver'], ['AXFR', 'kompletter Transfer'], ['IXFR', 'nur Änderungen'], ['in-addr.arpa', 'IPv4-Reverse']],
+  },
+
   visuals: [
     {
       title: '🔁 Forward vs. Reverse',

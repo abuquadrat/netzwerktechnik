@@ -172,6 +172,38 @@ registerTopic({
     },
   ],
 
+  games: {
+    blitz: [
+      () => {
+        let g; do { g = IPv6.randAddr(); } while (IPv6.zeroRun(g).len < 2);
+        const c = IPv6.compress(g);
+        const parts = c.split(':');
+        const ti = parts.findIndex(h => h.length > 1 && h.endsWith('0'));
+        const cand = [IPv6.stripZeros(g), c.replace('::', ':0:'), ti >= 0 ? parts.map((h, i) => i === ti ? h.replace(/0+$/, '') : h).join(':') : c.replace('::', ':') + '::0'];
+        const wrong = shuffle([...new Set(cand)].filter(x => x !== c)).slice(0, 2);
+        return { q: `Kürzeste korrekte Schreibweise von<br><code>${IPv6.expand(g)}</code>?`, a: [c, ...wrong], e: 'Führende Nullen weg, längste Null-Folge EINMAL durch :: ersetzen. Nullen am Ende eines Blocks bleiben!' };
+      },
+      () => pick([
+        { q: 'Wie viele Bit hat eine IPv6-Adresse?', a: ['128', '64', '32'], e: '8 Blöcke × 16 Bit.' },
+        { q: 'Wie viele Bit hat ein Block (Hextet)?', a: ['16', '8', '4'], e: '4 Hex-Ziffern à 4 Bit.' },
+        { q: 'Wie viele Hex-Ziffern hat eine volle IPv6-Adresse?', a: ['32', '16', '128'], e: '8 × 4 = 32.' },
+        { q: 'Wie groß ist der IPv6-Basis-Header?', a: ['40 Byte', '20 Byte', '60 Byte'], e: 'Fest 40 Byte.' },
+        { q: 'Wie oft darf :: in einer Adresse vorkommen?', a: ['einmal', 'beliebig oft', 'zweimal'], e: 'Sonst ist unklar, wie viele Nullen wo fehlen.' },
+      ]),
+    ],
+    sort: [{
+      name: 'Gültig oder nicht?', q: 'Richtig geschrieben?', bins: ['✅ gültig', '❌ ungültig'],
+      make() {
+        const g = IPv6.randAddr(), c = IPv6.compress(g), h = () => rnd(0x10000).toString(16);
+        const s = pick([c, c, IPv6.stripZeros(g), IPv6.expand(g),
+          `2001:db8::${h()}::${rnd(16)}`, c.replace(/[0-9a-f](?=[^:]*$)/, 'g'), IPv6.stripZeros(g) + ':1', `2001:db8:${h()}${rnd(9) + 1}::1`, IPv6.stripZeros(g).split(':').slice(1).join(':')]);
+        try { IPv6.parse(s); return [s, 0, 'Korrekte Schreibweise.']; } catch (e) { return [s, 1, e.message]; }
+      },
+    }],
+    seq: [{ name: 'IPv6-Adresse kürzen', steps: ['Adresse vollständig ausschreiben (8 Blöcke)', 'In jedem Block führende Nullen entfernen', 'Längste Folge von Null-Blöcken suchen', 'Diese Folge EINMAL durch :: ersetzen', 'Kontrolle: :: + Blöcke ergeben 8'] }],
+    pairs: [['128 Bit', 'Länge IPv6-Adresse'], ['16 Bit', 'ein Block (Hextet)'], ['4 Bit', 'eine Hex-Ziffer'], ['40 Byte', 'IPv6-Header'], ['Hop Limit', 'ersetzt die TTL'], ['/64', 'Standard-LAN-Präfix'], ['2001:db8::/32', 'Doku-Präfix'], ['[2001:db8::1]:80', 'IPv6 in URL']],
+  },
+
   visuals: [
     {
       title: '🧪 Adress-Labor',

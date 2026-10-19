@@ -175,6 +175,40 @@ registerTopic({
     },
   ],
 
+  games: {
+    blitz: [
+      () => {
+        const a = pick([48, 48, 52, 56, 60]), d = 1 + rnd(Math.min(16, 64 - a)), b = a + d;
+        const c = 2 ** d;
+        const wrong = [...new Set([2 ** (d + 1), d > 1 ? 2 ** (d - 1) : 2 ** (d + 2), d * 2 === c ? 2 ** (d + 2) : d * 2])].filter(x => x !== c).slice(0, 2);
+        return { q: `Wie viele <code>/${b}</code>-Subnetze passen in ein <code>/${a}</code>?`, a: [c, ...wrong].map(fmtNum), e: `${b} − ${a} = ${d} Bit → 2^${d} = ${fmtNum(c)}.` };
+      },
+      () => {
+        const base = [0x2001, 0xdb8, rnd(0x10000), 0, 0, 0, 0, 0], k = 2 + rnd(7);
+        const right = IPv6.compress(IPv6.subnet(base, 48, 52, k - 1));
+        const off = IPv6.compress(IPv6.subnet(base, 48, 52, k));
+        const g2 = [...base]; g2[3] = k - 1;
+        return { q: `<code>${IPv6.compress(base)}/48</code> → /52. Wie lautet das <b>${k}.</b> Subnetz?`, a: [right, off, IPv6.compress(g2)].map(x => x + '/52'), e: `/52 = erste Hex-Ziffer des 4. Blocks zählt. Das 1. Subnetz ist 0000 → das ${k}. ist ${(k - 1).toString(16)}000.` };
+      },
+      () => {
+        const N = 3 + rnd(120), bits = Math.ceil(Math.log2(N));
+        return { q: `/48 und du brauchst <b>${N}</b> Subnetze. Mindest-Präfix?`, a: [48 + bits, 48 + bits - 1, 48 + bits + 1].map(x => '/' + x), e: `2^${bits} = ${2 ** bits} ≥ ${N} → /${48 + bits}.` };
+      },
+    ],
+    sort: [
+      {
+        name: 'Nibble-Grenze?', q: 'Liegt das Präfix auf einer Nibble-Grenze?', bins: ['✅ ja (Vielfaches von 4)', '❌ nein'],
+        make() { const p = 33 + rnd(32); return [`/${p}`, p % 4 === 0 ? 0 : 1, p % 4 === 0 ? `${p} = 4 × ${p / 4} → pro Stufe genau eine Hex-Ziffer.` : `${p} ist kein Vielfaches von 4 – die Grenze liegt mitten in einer Hex-Ziffer.`]; },
+      },
+      {
+        name: 'Typisches Präfix', q: 'Wofür ist das Präfix typisch?', bins: ['🏢 Firma / Standort', '🏠 Privatkunde', '💻 ein LAN', '🔗 Router-Link / Host'],
+        items: [['/48', 0, 'Standard-Zuteilung für Firmen'], ['/52', 0, 'Großer Standort innerhalb eines /48'], ['/56', 1, 'Empfohlene Größe für Privatkunden'], ['/60', 1, 'Manche Provider geben Privatkunden nur /60'], ['/64', 2, 'Jedes LAN/VLAN – wegen SLAAC'], ['/127', 3, 'Point-to-Point zwischen Routern (RFC 6164)'], ['/128', 3, 'Einzelner Host, z. B. Loopback eines Routers']],
+      },
+    ],
+    seq: [{ name: 'Subnetting-Rezept', steps: ['Benötigte Bits: kleinstes n mit 2^n ≥ Anzahl', 'Neues Präfix = altes Präfix + n', 'Block finden, in dem die Grenze liegt', 'Schrittweite = 2^(Blockende − neues Präfix)', 'Subnetze aufzählen: 0, 1×, 2× Schrittweite …'] }],
+    pairs: [['/48 → /64', '65.536 Subnetze'], ['/56 → /64', '256 Subnetze'], ['/60 → /64', '16 Subnetze'], ['/52 → /64', '4.096 Subnetze'], ['/48 → /50', '4 Subnetze'], ['0x4000', '16.384'], ['0x8000', '32.768'], ['1 Hex-Ziffer', '4 Bit (Nibble)']],
+  },
+
   visuals: [
     {
       title: '🧮 Subnetz-Rechner',

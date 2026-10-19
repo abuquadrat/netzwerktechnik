@@ -178,6 +178,26 @@ Ethernet-Adapter Ethernet:
     },
   ],
 
+  games: {
+    sort: [{
+      name: 'Adresstyp', q: 'Welcher Typ ist das?', bins: ['Link-Local', 'Unique Local', 'Global Unicast', 'Multicast'],
+      make() {
+        const h = () => rnd(0x10000).toString(16);
+        const k = rnd(4);
+        const addr = [
+          () => `fe80::${h()}:${h()}:${h()}:${h()}`,
+          () => `fd${rnd(256).toString(16).padStart(2, '0')}:${h()}:${h()}:${rnd(16)}::${h()}`,
+          () => `${pick(['2001', '2a02', '2003', '2a00', '2600', '3fff'])}:${h()}:${h()}::${h()}`,
+          () => pick(['ff02::1', 'ff02::2', 'ff02::1:2', 'ff05::1:3', `ff02::1:ff${rnd(256).toString(16).padStart(2, '0')}:${h()}`]),
+        ][k]();
+        const c = IPv6.classify(addr);
+        return [addr, k, `${c.prefix} – ${c.desc}${c.extra ? ' ' + c.extra : ''}`];
+      },
+    }],
+    seq: [{ name: 'Solicited-Node-Adresse bilden', steps: ['Unicast-Adresse vollständig ausschreiben', 'Die letzten 24 Bit (6 Hex-Ziffern) nehmen', 'ff02::1:ff davorsetzen', 'Host tritt dieser Multicast-Gruppe bei'] }],
+    pairs: [['fe80::/10', 'Link-Local'], ['fc00::/7', 'Unique Local'], ['2000::/3', 'Global Unicast'], ['ff00::/8', 'Multicast'], ['::1', 'Loopback'], ['::', 'Unspecified'], ['ff02::1', 'Alle Knoten'], ['ff02::2', 'Alle Router'], ['ff02::1:2', 'DHCPv6-Server'], ['33:33:…', 'Multicast-MAC']],
+  },
+
   visuals: [
     {
       title: '🔍 Adress-Detektiv',

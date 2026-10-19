@@ -147,6 +147,36 @@ registerTopic({
     },
   ],
 
+  games: {
+    sort: [{
+      name: 'Welche Adresse?', q: 'Was für eine IPv4-Adresse ist das?', bins: ['🆘 APIPA', '🏠 Privat', '🌍 Öffentlich'],
+      make() {
+        const o = () => rnd(256);
+        return pick([
+          () => [`169.254.${1 + rnd(254)}.${o()}`, 0, '169.254.0.0/16 = APIPA: DHCP hat nicht geantwortet.'],
+          () => [`10.${o()}.${o()}.${1 + rnd(254)}`, 1, '10.0.0.0/8 – privat (RFC 1918).'],
+          () => [`172.${16 + rnd(16)}.${o()}.${1 + rnd(254)}`, 1, '172.16.0.0 – 172.31.255.255 – privat (RFC 1918).'],
+          () => [`192.168.${o()}.${1 + rnd(254)}`, 1, '192.168.0.0/16 – privat (RFC 1918).'],
+          () => [`169.${pick([253, 255, 245])}.${o()}.${1 + rnd(254)}`, 2, 'Fast APIPA – aber nur 169.254.x.x ist APIPA.'],
+          () => [`172.${pick([15, 32, 33, 40])}.${o()}.${1 + rnd(254)}`, 2, 'Privat ist nur 172.16 – 172.31.'],
+          () => [pick(['8.8.8.8', '1.1.1.1', '85.214.' + o() + '.' + o(), '193.99.144.80', '203.0.113.' + o()]), 2, 'Im Internet routbar.'],
+          () => [`192.169.${o()}.${1 + rnd(254)}`, 2, 'Privat ist nur 192.168.x.x.'],
+        ])();
+      },
+    }],
+    blitz: [
+      () => pick([
+        { q: 'APIPA-Subnetzmaske?', a: ['255.255.0.0', '255.255.255.0', '255.0.0.0'], e: '/16.' },
+        { q: 'Standardgateway bei APIPA?', a: ['keins', '169.254.0.1', 'der Router'], e: 'Daher kein Internet.' },
+        { q: 'Wie prüft der PC, ob die APIPA-Adresse frei ist?', a: ['ARP-Probe', 'Ping 8.8.8.8', 'DNS-Abfrage'], e: 'ARP mit Sender-IP 0.0.0.0.' },
+        { q: 'Wie oft sucht Windows weiter nach DHCP?', a: ['alle 5 Minuten', 'nie wieder', 'jede Sekunde'], e: 'Antwortet ein Server, wird APIPA ersetzt.' },
+        { q: 'IPv6-Gegenstück zu APIPA?', a: ['fe80::/10', 'fd00::/8', '::1'], e: 'Link-Local.' },
+      ]),
+    ],
+    seq: [{ name: 'Wie entsteht APIPA?', steps: ['DHCPDISCOVER – keine Antwort', 'Mehrere weitere Discover-Versuche', 'Zufallsadresse aus 169.254.x.x wählen', 'ARP-Probe: Ist die Adresse frei?', 'Adresse mit 255.255.0.0 nutzen, ohne Gateway', 'Alle 5 Minuten weiter nach DHCP suchen'] }],
+    pairs: [['169.254.0.0/16', 'APIPA-Bereich'], ['255.255.0.0', 'APIPA-Maske'], ['ARP-Probe', 'Konfliktprüfung'], ['5 Minuten', 'DHCP-Neuversuch'], ['fe80::/10', 'IPv6-Pendant'], ['RFC 3927', 'IPv4 Link-Local'], ['kein Gateway', 'kein Internet'], ['Alternative Konfiguration', 'statt APIPA']],
+  },
+
   visuals: [
     {
       title: '🧪 Simulator: DHCP an/aus',

@@ -181,6 +181,35 @@ Address:  203.0.113.10`)}
     },
   ],
 
+  games: {
+    sort: [
+      {
+        name: 'Welche Ebene?', q: 'Was ist der markierte Teil?', bins: ['Top-Level-Domain', 'Second-Level-Domain', 'Subdomain / Host'],
+        make() {
+          const labels = [pick(['www', 'mail', 'shop', 'vpn', 'api']), ...(Math.random() < .5 ? [pick(['intern', 'dev', 'eu'])] : []), pick(['beispiel', 'firma', 'schule', 'kaffee']), pick(['de', 'com', 'org', 'at', 'net'])];
+          const n = labels.length, i = rnd(n), bin = i === n - 1 ? 0 : i === n - 2 ? 1 : 2;
+          return [labels.map((l, k) => k === i ? `<mark>${l}</mark>` : l).join('.') + '.', bin, ['Ganz rechts vor dem Root-Punkt = TLD.', 'Direkt links neben der TLD = Second-Level-Domain.', 'Alles weiter links = Subdomain bzw. Host.'][bin]];
+        },
+      },
+      {
+        name: 'gTLD oder ccTLD?', q: 'Welche Art von TLD?', bins: ['🌐 gTLD (generisch)', '🏳️ ccTLD (Land)'],
+        items: [['.com', 0], ['.org', 0], ['.net', 0], ['.info', 0], ['.app', 0, 'Neue gTLD.'], ['.berlin', 0, 'Stadt-TLD – zählt zu den (neuen) gTLDs, ist kein Land.'], ['.de', 1, 'Deutschland, verwaltet von der DENIC.'], ['.at', 1, 'Österreich.'], ['.ch', 1, 'Schweiz.'], ['.uk', 1, 'Vereinigtes Königreich.'], ['.io', 1, 'Britisches Territorium im Indischen Ozean – technisch eine ccTLD.'], ['.tv', 1, 'Tuvalu – ccTLD, beliebt für Video-Seiten.']],
+      },
+    ],
+    blitz: [
+      () => pick([
+        { q: 'Client → Resolver fragt …', a: ['rekursiv', 'iterativ', 'per Broadcast'], e: 'Client will die fertige Antwort.' },
+        { q: 'Resolver → Root/TLD fragt …', a: ['iterativ', 'rekursiv', 'per Zonentransfer'], e: 'Antwort oder Verweis.' },
+        { q: 'Wie viele Root-Server-Namen gibt es?', a: ['13', '1', '255'], e: 'a bis m.root-servers.net, per Anycast viel mehr Instanzen.' },
+        { q: 'Wie delegiert die Parent-Zone an die Child-Zone?', a: ['NS-Record', 'PTR-Record', 'MX-Record'], e: 'Plus Glue-Record mit der IP.' },
+        { q: 'Standard-Port von DNS?', a: ['53', '67', '443'], e: 'UDP, TCP für große Antworten.' },
+        { q: 'Was zuerst bei der Namensauflösung?', a: ['lokaler Cache / hosts', 'Root-Server', 'TLD-Server'], e: 'Erst lokal, dann Resolver.' },
+      ]),
+    ],
+    seq: [{ name: 'Namensauflösung www.beispiel.de', steps: ['Lokaler Cache & hosts-Datei', 'Rekursive Anfrage an den Resolver', 'Resolver fragt einen Root-Server', 'Root verweist auf die .de-Server', '.de verweist auf ns1.beispiel.de', 'Autoritative Antwort: A-Record', 'Resolver cacht (TTL) und antwortet'] }],
+    pairs: [['.', 'Root-Domain'], ['.de', 'ccTLD'], ['.com', 'gTLD'], ['NS-Record', 'Delegation'], ['rekursiv', 'Client → Resolver'], ['iterativ', 'Resolver → Root/TLD'], ['TTL', 'Cache-Dauer'], ['Glue-Record', 'IP des Nameservers'], ['FQDN', 'endet mit Punkt'], ['DENIC', 'verwaltet .de']],
+  },
+
   visuals: [
     {
       title: '🌳 Domain-Baum',

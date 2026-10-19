@@ -6,6 +6,7 @@ Offline-Lern-App (Deutsch) für die FISI/IT-Prüfung. Reines HTML/CSS/JS, kein B
 - `index.html` – lädt Kern + alle Themen-Skripte (Reihenfolge = Reihenfolge in der App)
 - `js/app.js` – Router, Speicher (localStorage `nwt-progress-v1`), Quiz-Engine, Karteikarten, Prüfungsmodus, Rechentrainer, Spickzettel, UI-Bausteine (`UI.sequence`, `UI.pkt`, `UI.terminal`)
 - `js/ipv6.js` – IPv6-Helfer (parse, compress, subnet, classify, eui64, solicitedNode)
+- `js/games.js` – Spiele (Wahr/Falsch, Blitzrunde, Sortier-Rausch, Ablauf-Puzzle, Paare, Tages-Challenge), XP/Level/Serie (`Store.data.player`); Inhalte aus `t.quiz`, `t.generators` und `t.games`
 - `topics/*.js` – ein Thema pro Datei via `registerTopic({...})`; Vorlage: `topics/_vorlage.js`
 - `tools/verknuepfung-erstellen.ps1` – erzeugt `assets/icon.ico` und die Desktop-Verknüpfung neu
 

@@ -262,6 +262,7 @@ function runQuiz(root, questions, opts = {}) {
       ${st.wrong.length ? '<a class="btn" href="#/fehler">🩹 Zum Fehlertraining</a>' : ''}</div></div></div>
       ${st.wrong.length ? `<div class="card"><h3>Das solltest du wiederholen</h3>${st.wrong.map(q => `<div class="review"><div class="rq">${q.q}</div><div class="ra">✔ ${correctText(q)}</div>${q.e ? `<div class="re">${q.e}</div>` : ''}</div>`).join('')}</div>` : ''}`;
     if (opts.again) $('#qAgain', root).onclick = opts.again;
+    if (typeof Player !== 'undefined') Player.addXP(st.score * 5);
     opts.onFinish && opts.onFinish(pct, st);
   }
   onKey(e => {
@@ -293,6 +294,7 @@ function renderNav() {
   const link = (href, label, active, extra = '') => `<a href="${href}" class="${active ? 'active' : ''}">${label}${extra}</a>`;
   $('#nav').innerHTML =
     link('#/', '<span class="ni">🏠</span>Übersicht', !page) +
+    link('#/spiele', '<span class="ni">🎮</span>Spiele', page === 'spiele' || page === 'spiel') +
     link('#/pruefung', '<span class="ni">📝</span>Prüfungsmodus', page === 'pruefung') +
     link('#/fehler', '<span class="ni">🩹</span>Fehlertraining', page === 'fehler', m ? `<span class="badge">${m}</span>` : '') +
     link('#/karten', '<span class="ni">🃏</span>Karteikarten', page === 'karten') +
@@ -336,10 +338,12 @@ function viewHome(main) {
         <p>Jedes Thema in drei Schwierigkeitsstufen, mit animierten Abläufen, Rechnern zum Ausprobieren, Quizzen und Karteikarten. Dein Fortschritt wird auf diesem Gerät gespeichert.</p>
         <div class="hero-actions">
           ${next ? `<a class="btn primary big" href="#/thema/${next.id}">▶ Weiter mit: ${next.title}</a>` : ''}
+          <a class="btn big" href="#/spiele">🎮 Spielen</a>
           <a class="btn big" href="#/pruefung">📝 Prüfungsmodus</a>
         </div></div>
       <div class="hero-side">${UI.ring(avg, 'Gesamtfortschritt')}${examCountdown()}</div>
     </section>
+    <a class="card home-player" href="#/spiele">${Player.badge()}</a>
     <div class="stats">
       <div class="stat"><b>${total}</b><span>Themen</span></div>
       <div class="stat"><b>${readAll}/${total}</b><span>komplett gelesen (alle 3 Stufen)</span></div>
@@ -361,7 +365,7 @@ function viewTopic(main, t) {
     <header class="topic-head" style="--tc:${t.color}">
       <div class="topic-icon">${t.icon}</div>
       <div class="topic-title"><div class="crumb"><a href="#/">Übersicht</a> › ${t.category}</div><h1>${t.title}</h1><p>${t.subtitle || ''}</p></div>
-      <div class="topic-actions"><a class="btn primary" href="#/quiz/${t.id}">🎯 Quiz starten</a>${t.cards.length ? `<a class="btn" href="#/karten/${t.id}">🃏 Karteikarten</a>` : ''}</div>
+      <div class="topic-actions"><a class="btn primary" href="#/quiz/${t.id}">🎯 Quiz starten</a><a class="btn" href="#/spiele/${t.id}">🎮 Spielen</a>${t.cards.length ? `<a class="btn" href="#/karten/${t.id}">🃏 Karteikarten</a>` : ''}</div>
     </header>
     <div class="level-tabs">${[1, 2, 3].map(l => `<button data-l="${l}">${LEVELS[l].icon} ${LEVELS[l].name}<span class="tick">${st.read.includes(l) ? '✔' : ''}</span><small>${LEVELS[l].desc}</small></button>`).join('')}</div>
     <article class="card content" id="lvlContent"></article>
@@ -530,7 +534,7 @@ function route() {
   window.scrollTo(0, 0);
   $('.sidebar').classList.remove('open');
   renderNav();
-  const tabFor = { thema: 'themen', quiz: 'themen', trainer: 'themen', spick: 'themen' };
+  const tabFor = { thema: 'themen', quiz: 'themen', trainer: 'themen', spick: 'themen', spiel: 'spiele', karten: 'spiele' };
   $$('#tabbar a').forEach(x => x.classList.toggle('active', x.dataset.p === (tabFor[page] ?? page)));
   switch (page) {
     case 'thema': return App.byId[a] ? viewTopic(main, App.byId[a]) : viewHome(main);
@@ -541,6 +545,8 @@ function route() {
     case 'trainer': return viewTrainer(main, a, +b);
     case 'spick': return viewCheat(main);
     case 'themen': return viewTopics(main);
+    case 'spiele': return viewGames(main, a);
+    case 'spiel': return viewPlay(main, a, b);
     default: return viewHome(main);
   }
 }

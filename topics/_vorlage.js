@@ -37,6 +37,14 @@ registerTopic({
     { name: 'Zufallsaufgabe', make() { const n = 2 + rnd(10); return { type: 'input', q: `2 hoch ${n}?`, accept: [String(2 ** n)], norm: 'num' }; } },
   ],
 
+  // Optional: Inhalte für die Spiele (Wahr/Falsch nutzt automatisch die Quizfragen)
+  games: {
+    blitz: [() => ({ q: 'Kurze Frage?', a: ['richtig', 'falsch', 'falsch'], e: 'Erklärung' })], // a[0] = richtig
+    sort: [{ name: 'Sortieren', q: 'Wohin gehört das?', bins: ['Kiste A', 'Kiste B'], items: [['Begriff', 0, 'Erklärung']] }], // oder make() => [text, bin, erklärung]
+    seq: [{ name: 'Ablauf', steps: ['Schritt 1', 'Schritt 2', 'Schritt 3'] }],
+    pairs: [['Begriff', 'kurze Bedeutung']], // mind. 6 Paare, kurz halten (Memory-Kacheln)
+  },
+
   // Optional: interaktive Visualisierungen. Bausteine: UI.sequence (animierter Paketablauf), UI.pkt, UI.terminal
   visuals: [
     {
